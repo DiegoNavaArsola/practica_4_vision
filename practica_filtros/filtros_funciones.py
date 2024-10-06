@@ -76,7 +76,16 @@ def max_value_matrix(matrix):
     :param matrix: Matriz cualquiera
     :return: El valor máximo de los elementos de la matriz
     """
-    return np.max(np.array(matrix))
+    return np.max(np.abs(np.array(matrix)))
+
+def gradient(n):
+    """
+    :param n:  Nivel del triángulo de pascal
+    :return: La magnitud (matriz) del gradiente de la función matricial para n coeficientes
+    """
+    bin_fun = np.array([pascal_triangle(n)])
+    sec_der = np.array([second_derivate(n-2)])
+    return np.multiply(bin_fun.transpose(),sec_der) + np.multiply(sec_der.transpose(),bin_fun)
 
 def unite_separate_filters(array):
     """
@@ -107,16 +116,26 @@ def calculate_edge_filter(n):
     max = max_value_matrix(united_matrix)
     return (1 / max) * united_matrix
 
+
+def identity_filter(n):
+    # Crear una matriz de ceros de tamaño n x n
+    identity = np.zeros((n, n))
+
+    # Ubicar el 1 en el centro
+    mid = n // 2
+    identity[mid, mid] = 1
+
+    return identity
+
 def calculate_lapace_filter(n):
     """
     :param n:  Nivel del triángulo de pascal
     :return: Kernel normalizado de tamaño nxn calculado a partir de los coeficientes del triángulo de pascal derivado en el nivel n
              La normalización se obtiene al dividir los elementos del kernel entre las valor más alto de estos
     """
-    sec_der = second_derivate(n)
-    united_matrix = unite_separate_filters([sec_der])
-    max = max_value_matrix(united_matrix)
-    return (1 / max) * united_matrix
+    grad = gradient(n)
+    max = max_value_matrix(grad)
+    return (1/max) * grad
 
 def calculate_block_filter(n,m):
     return (1/(n*m))*np.ones((n,m), np.float32)
@@ -148,11 +167,25 @@ def calculate_sobel(n,dir):
     else:
         print("Ingrese una dirección correcta (X o Y)")
 
+
+def calculate_unsharp_masking(n, k, type):
+    i = identity_filter(n)
+    if  type.lower() == "block":
+        block = calculate_block_filter(n,n)
+        return i + k * (i - block)
+    elif type.lower() == "gauss":
+        gauss = calculate_gauss_filter(n)
+        return i + k * (i - gauss)
+    else:
+        print("Tipo de filtro no válido")
+
 if __name__ == "__main__":
 
     # Numero de coeficientes en el filtro
     num_coef = 5
     n = num_coef - 1
+
+
 
     """
     Cálculo de los triángulos de coeficientes
@@ -192,7 +225,7 @@ if __name__ == "__main__":
     print("\n")
 
     # Creación del filtro binomial o de de borde (sin normalizar) a partir del vector
-    united_2nd_der_filter = unite_separate_filters([d2_t])
+    united_2nd_der_filter = gradient(num_coef)
     print(f"Filtro 2 derivada (sin normalizar) con {num_coef} coeficientes n={n}: ")
     print(united_2nd_der_filter)
     print("\n")
@@ -216,7 +249,7 @@ if __name__ == "__main__":
 
     # Normalizando la matriz con el valor máximo presente dentro del filtro (filtro final)
     max_ele_2der = max_value_matrix(united_2nd_der_filter)
-    d2_t_normalized = calculate_lapace_filter(n-1)
+    d2_t_normalized = calculate_lapace_filter(num_coef)
     print(f"Filtro laplaciano normalizado con {num_coef} coeficientes (n={n}) (divido entre {max_ele_2der}): ")
     print(d2_t_normalized)
     print("\n")
