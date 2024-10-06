@@ -19,14 +19,15 @@ def map_interpolate(image):
 def apply_kernel(image, kernel, normalize):
     filtered_image = convolve2d(image, kernel, mode='same')
     if not normalize:
-        #print(filtered_image)
         return filtered_image
     else:
-        #print(map_interpolate(filtered_image))
         return map_interpolate(filtered_image)
 
 if __name__ == "__main__":
 
+    """
+    1) Imagen con filtro y sin filtro
+    """
     # Cargar la imagen
     img = cv2.imread('cheems_original.jpg')
     #img_noise = cv2.imread("eagle_snake_ruido.png")
@@ -34,15 +35,13 @@ if __name__ == "__main__":
 
     # Convertir la imagen de BGR a RGB (para visualizarla correctamente con matplotlib)
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # Generar la imagen con ruido
     img_gray_noise = np.clip(img_gray + np.random.normal(0,25, img_gray.shape), 0, 255).astype(np.uint8)
     cv2.imwrite("image_noise.png", img_gray_noise)
 
-    #cv2.imshow("Imagen ruido gris",img_gray_noise)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows()
-
     """
-    2)
+    2) Filtros paso bajas de bloque
     """
     # FIltros de bloque
     block_3x3 = calculate_block_filter(3, 3)
@@ -51,7 +50,7 @@ if __name__ == "__main__":
     block_11x11 = calculate_block_filter(11, 11)
 
     """
-    3)
+    3) Filtros paso bajas binomiales
     """
     # Filtros gaussianos
     gauss_3x3 = calculate_gauss_filter(3)
@@ -60,7 +59,7 @@ if __name__ == "__main__":
     gauss_11x11 = calculate_gauss_filter(11)
 
     """
-    4)
+    4) Filtros de borde (primera derivada)
     """
     # Filtro de bloque [1,-1]
     block_1x2 = [np.array([1, -1])]
@@ -79,7 +78,7 @@ if __name__ == "__main__":
     edge_11x11 = calculate_edge_filter(1)
 
     """
-    5)
+    5) Filtros laplacianos (segunda derivada)
     """
     # Laplaciano de literatura
     laplace_3x3_lit = (1 / 8) * np.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
@@ -90,7 +89,7 @@ if __name__ == "__main__":
     laplace_11x11 = calculate_lapace_filter(11)
 
     """
-    6) 
+    6) Difuminación y filtros unsharp-masking
     """
     # Suavizar imagen con filtro gauss 5x5
     img_smoth = apply_kernel(img_gray, calculate_gauss_filter(5),True)
@@ -104,6 +103,7 @@ if __name__ == "__main__":
 
     unsharp_mask_gauss_3x3 = calculate_unsharp_masking(3, k, "gauss")
     unsharp_mask_gauss_5x5 = calculate_unsharp_masking(5, k, "gauss")
+
 
     """
     Obtención de las imagenes

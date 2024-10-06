@@ -87,6 +87,16 @@ def gradient(n):
     sec_der = np.array([second_derivate(n-2)])
     return np.multiply(bin_fun.transpose(),sec_der) + np.multiply(sec_der.transpose(),bin_fun)
 
+def identity_filter(n):
+    # Crear una matriz de ceros de tamaño n x n
+    identity = np.zeros((n, n))
+
+    # Ubicar el 1 en el centro
+    mid = n // 2
+    identity[mid, mid] = 1
+
+    return identity
+
 def unite_separate_filters(array):
     """
     :param array: Matriz (array) de tamaño nx1
@@ -115,17 +125,6 @@ def calculate_edge_filter(n):
     united_matrix = unite_separate_filters([first_der])
     max = max_value_matrix(united_matrix)
     return (1 / max) * united_matrix
-
-
-def identity_filter(n):
-    # Crear una matriz de ceros de tamaño n x n
-    identity = np.zeros((n, n))
-
-    # Ubicar el 1 en el centro
-    mid = n // 2
-    identity[mid, mid] = 1
-
-    return identity
 
 def calculate_lapace_filter(n):
     """
@@ -178,6 +177,7 @@ def calculate_unsharp_masking(n, k, type):
         return i + k * (i - gauss)
     else:
         print("Tipo de filtro no válido")
+
 
 if __name__ == "__main__":
 
